@@ -7,6 +7,7 @@ Camera::Camera(const std::string &url) : id{CamFunctions::longhash(url)}, url{ur
 	ip = uri.Host;
 	port = uri.Port.length() > 0 ? std::stoi(uri.Port) : 80;
 	path = uri.Path + uri.QueryString;
+	proto = uri.Protocol;
 }
 
 bool Camera::operator==(const Camera& other)

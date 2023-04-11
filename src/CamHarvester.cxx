@@ -8,6 +8,8 @@
 #include "CamManager.h"
 #include "Camera.h"
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/stat.h>
 
 using namespace boost::asio;
 io_service service;
@@ -35,7 +37,7 @@ public:
         if ( cC != nullptr)
         {
             std::ostringstream stringStream;
-            stringStream << SAVE_DIR << "/" << cC->getCamera().id << "-" << std::setw(10) << std::setfill('0') << counter << ".jpg";
+            stringStream << SAVE_DIR << "/" << cC->getCamera().id << "/" << cC->getCamera().id << "-" << std::setw(10) << std::setfill('0') << counter << ".jpg";
             std::cout << "Received image length "  << image->length() << " writing to file " << stringStream.str()  << std::endl;
             std::ofstream outputstream( stringStream.str() , std::ios::binary );
             std::ostreambuf_iterator<char> out_it (outputstream);
@@ -72,8 +74,19 @@ int main(int argc, char *argv[])
     for (auto cam : CamManager::getCameras())
     {
         auto netconnection = ClientNetworking::new_();
+        // create output directories
+        struct stat st = {0};
+        std::string dir = std::string(SAVE_DIR) + "/" + std::to_string(cam.first);
+        if (cam.second.proto != "http") {
+            std::cerr << "Unsupported protocol for camera " << cam.second.url << std::endl;
+            continue;
+        }
+
+        if (stat(dir.c_str(), &st) == -1)
+            mkdir(dir.c_str(), 0755);
         netconnection->do_connect(&(cam.second));
     }
+
     service.reset();
     service.run();
     return 0;

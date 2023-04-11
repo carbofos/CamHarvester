@@ -19,4 +19,5 @@ public:
 	std::string ip;
 	unsigned int port;
 	std::string path;
+	std::string proto;
 };
